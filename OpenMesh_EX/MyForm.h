@@ -269,7 +269,18 @@ private: System::Void hkoglPanelControl1_Paint(System::Object^  sender, System::
 	pickingShader.SetMVMat(value_ptr(mvMat));
 	pickingShader.SetPMat(value_ptr(pMat));
 	
-	model.Render();
+	// lotus
+
+	if (model.render_mode == 0)
+	{
+		model.Render();
+	}
+	else if (model.render_mode == 1)
+	{
+		model.Render_temp();
+	}
+
+	// sutol
 
 	pickingShader.Disable();
 	pickingTexture.Disable();
@@ -290,6 +301,8 @@ private: System::Void hkoglPanelControl1_Paint(System::Object^  sender, System::
 	drawModelShader.SetMVMat(mvMat);
 	drawModelShader.SetPMat(pMat);
 
+	// lotus
+
 	if (model.render_mode == 0)
 	{
 		model.Render();
@@ -298,6 +311,8 @@ private: System::Void hkoglPanelControl1_Paint(System::Object^  sender, System::
 	{
 		model.Render_temp();
 	}
+
+	// sutol
 
 	drawModelShader.Disable();
 
@@ -508,10 +523,18 @@ private: System::Void hkoglPanelControl1_KeyPress(System::Object^  sender, Syste
 
 		model.render_mode = 1;
 
+		hkoglPanelControl1->Invalidate();
+		//e.Handled = true;
+	}
+	else if (e->KeyChar == '6') {
+		model.MeshFragment();
+		model.MapToUV();
 
 		hkoglPanelControl1->Invalidate();
 		//e.Handled = true;
 	}
+
+
 //¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×¡×
 }
 //«ö¤Uload model¿ï³æ

@@ -6,7 +6,10 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdint>
+using namespace std;
 #define Quad
+
+
 //#define Harmonic
 
 struct OpenMesh::VertexHandle const OpenMesh::PolyConnectivity::InvalidVertexHandle;
@@ -318,10 +321,14 @@ void MeshObject::MeshFragment()
 	MyMesh::VertexHandle newvh;
 	int temp_num = 0, tempidx;
 
-	selectedPoint_temp.clear();
+	//selectedPoint_temp.clear();
+
+	//cout << selectedFace.size() << endl;
+	//cout << selectedPoint.size() << endl;
 
 	for (auto it = selectedFace.begin(); it != selectedFace.end(); ++it)
 	{
+		selectedPoint_temp.clear();
 		for (int i = 0; i < 3; i++)
 		{
 			tempidx = model.mesh_temp.FindVertex(model.mesh.point(selectedPoint[3 * temp_num + i]));
@@ -341,7 +348,95 @@ void MeshObject::MeshFragment()
 
 		temp_num++;
 	}
+	//cout << model.mesh_temp.n_edges() << endl;
+	//cout << model.mesh_temp.n_vertices() << endl;
+
 }
+
+
+
+void MeshObject::MapToUV()
+{
+	MyMesh::HalfedgeHandle first_heh, temp_heh;
+	double total_edgelen = 0, now_UVlen = 0;
+
+	std::cout << "MapToUV start" << endl;
+	// --------------get boundary----------------
+	for (auto he_it = model.mesh_temp.halfedges_begin(); he_it != model.mesh_temp.halfedges_end(); ++he_it)
+	{
+		if (model.mesh_temp.is_boundary(*he_it))
+		{
+			first_heh = temp_heh = *he_it;
+			break;
+		}
+	}
+	//cout << "first_heh" << first_heh << endl;
+	temp_heh = model.mesh_temp.next_halfedge_handle(temp_heh);
+	selectedBoundary_heh.clear();
+	while (temp_heh != first_heh)
+	{
+		selectedBoundary_heh.push_back(temp_heh);
+		total_edgelen += model.mesh_temp.calc_edge_length(temp_heh);
+		//cout << model.mesh_temp.calc_edge_length(temp_heh) << endl;
+		temp_heh = model.mesh_temp.next_halfedge_handle(temp_heh);
+	}
+	selectedBoundary_heh.push_back(temp_heh);
+	total_edgelen += model.mesh_temp.calc_edge_length(temp_heh);
+
+	selectedMiddle_vh.clear();
+	for (auto v_it = model.mesh_temp.vertices_begin(); v_it != model.mesh_temp.vertices_end(); ++v_it)
+	{
+		if (!model.mesh_temp.is_boundary(*v_it))
+		{
+			selectedMiddle_vh.push_back(*v_it);
+			//cout << "Middle vh: " << *v_it << endl;
+		}
+	}
+	//cout << model.mesh_temp.n_vertices() << endl;
+	std::cout << selectedBoundary_heh.size() << endl;
+	//cout << selectedMiddle_vh.size() << endl;
+	double temp_d = 0;
+
+	UV_tuple.push_back(make_tuple(model.mesh_temp.from_vertex_handle(*selectedBoundary_heh.begin()), 0, 0));
+
+	for (auto it = selectedBoundary_heh.begin(); it != selectedBoundary_heh.end()-1; ++it)
+	{
+
+		temp_d = now_UVlen + 4 * (model.mesh_temp.calc_edge_length(*it) / total_edgelen);
+		std::cout << "double" << temp_d << "int" << int(temp_d) << endl;
+		switch (int(temp_d))
+		{
+			case 0:
+				UV_tuple.push_back(make_tuple(model.mesh_temp.to_vertex_handle(*it), temp_d, 0));
+				break;
+			case 1:
+				UV_tuple.push_back(make_tuple(model.mesh_temp.to_vertex_handle(*it), 1, temp_d - 1));
+				break;
+			case 2:
+				UV_tuple.push_back(make_tuple(model.mesh_temp.to_vertex_handle(*it), 3 - temp_d, 1));
+				break;
+			case 3:
+				UV_tuple.push_back(make_tuple(model.mesh_temp.to_vertex_handle(*it), 0, 4 - temp_d));
+				break;
+			case 4:
+				std::cout << "oh no" << endl;
+				break;
+		}
+		//cout << "1" << endl;
+		now_UVlen += 4 * (model.mesh_temp.calc_edge_length(*it) / total_edgelen);
+		//UV_tuple.push_back(make_tuple(model.mesh_temp.to_vertex_handle(*it),)))
+	}
+
+
+	std::cout << UV_tuple.size() << endl;
+	for (auto it = UV_tuple.begin(); it != UV_tuple.end(); ++it)
+	{
+		//cout << 2 << endl;
+		std::cout << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << endl;
+	}
+
+}
+
 
 
 // 偉大的人

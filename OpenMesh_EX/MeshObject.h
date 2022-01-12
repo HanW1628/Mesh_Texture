@@ -64,6 +64,8 @@ public:
 	bool AddSelectedFacefinished();
 
 	void MeshFragment();
+	void MapToUV();
+	
 	void CalculateCotWeight();
 
 	double MeshObject::cotan(OpenMesh::Vec3f a,OpenMesh::Vec3f b);
@@ -77,6 +79,9 @@ private:
 	std::vector<unsigned int> selectedFace;
 	std::vector<MyMesh::VertexHandle> selectedPoint;
 	std::vector<MyMesh::VertexHandle> selectedPoint_temp;
+	std::vector<MyMesh::HalfedgeHandle> selectedBoundary_heh;
+	std::vector<MyMesh::VertexHandle> selectedMiddle_vh;
+	std::vector<std::tuple<MyMesh::VertexHandle, double, double>> UV_tuple;
 
 	//std::vector<MyMesh::Point> point;
 	//std::vector<unsigned int*> fvIDsPtr;
